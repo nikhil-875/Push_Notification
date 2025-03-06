@@ -1,0 +1,430 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Push Notification Demo</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600&display=swap" rel="stylesheet">
+    <style>
+      body {
+        font-family: 'Poppins', sans-serif;
+        max-width: 800px;
+        margin: 0 auto;
+        padding: 20px;
+        background: #f0f2f5;
+        min-height: 100vh;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+      
+      .container {
+        background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%);
+        padding: 30px;
+        border-radius: 16px;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+        width: 100%;
+        max-width: 600px;
+        transition: transform 0.3s ease;
+      }
+
+      .container:hover {
+        transform: translateY(-5px);
+      }
+
+      h1 {
+        color: #1a73e8;
+        margin-bottom: 30px;
+        font-size: 2.5em;
+        text-align: center;
+        font-weight: 600;
+      }
+
+      h2 {
+        color: #333;
+        margin: 25px 0 15px;
+        font-size: 1.5em;
+        font-weight: 500;
+      }
+
+      button {
+        background: linear-gradient(135deg, #1a73e8 0%, #0d47a1 100%);
+        color: white;
+        padding: 12px 24px;
+        border: none;
+        border-radius: 8px;
+        cursor: pointer;
+        margin: 5px;
+        font-size: 1em;
+        font-weight: 500;
+        transition: all 0.3s ease;
+        box-shadow: 0 4px 15px rgba(26, 115, 232, 0.2);
+        width: 100%;
+      }
+
+      button:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 20px rgba(26, 115, 232, 0.3);
+        background: linear-gradient(135deg, #1557b0 0%, #0a3578 100%);
+      }
+
+      input,
+      textarea {
+        width: 100%;
+        padding: 12px;
+        margin: 8px 0;
+        box-sizing: border-box;
+        border: 2px solid #e1e5ea;
+        border-radius: 8px;
+        font-size: 1em;
+        transition: all 0.3s ease;
+        font-family: 'Poppins', sans-serif;
+      }
+
+      input:focus,
+      textarea:focus {
+        outline: none;
+        border-color: #1a73e8;
+        box-shadow: 0 0 0 3px rgba(26, 115, 232, 0.1);
+      }
+
+      textarea {
+        min-height: 100px;
+        resize: vertical;
+      }
+
+      #notificationForm {
+        background: rgba(255, 255, 255, 0.5);
+        padding: 20px;
+        border-radius: 12px;
+        border: 1px solid rgba(231, 234, 237, 0.7);
+        margin-top: 30px;
+      }
+
+      /* Custom notification style */
+      .custom-notification {
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        background: linear-gradient(135deg, #1a73e8 0%, #0d47a1 100%);
+        color: white;
+        padding: 20px;
+        border-radius: 12px;
+        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+        z-index: 1000;
+        max-width: 300px;
+        animation: slideIn 0.5s ease-out;
+      }
+
+      /* Toast notification style */
+      .toast {
+        position: fixed;
+        bottom: 20px;
+        left: 50%;
+        transform: translateX(-50%);
+        background: linear-gradient(135deg, #4CAF50 0%, #45a049 100%);
+        color: white;
+        padding: 16px 32px;
+        border-radius: 8px;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+        z-index: 1000;
+        font-size: 1em;
+        font-weight: 500;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        animation: toastSlideUp 0.3s ease-out;
+      }
+
+      .toast.error {
+        background: linear-gradient(135deg, #ef5350 0%, #d32f2f 100%);
+      }
+
+      @keyframes toastSlideUp {
+        from {
+          transform: translate(-50%, 100%);
+          opacity: 0;
+        }
+        to {
+          transform: translate(-50%, 0);
+          opacity: 1;
+        }
+      }
+
+      @keyframes slideIn {
+        from {
+          transform: translateX(100%);
+          opacity: 0;
+        }
+        to {
+          transform: translateX(0);
+          opacity: 1;
+        }
+      }
+
+      .custom-notification h4 {
+        margin: 0 0 8px 0;
+        font-size: 1.2em;
+        font-weight: 500;
+      }
+
+      .custom-notification p {
+        margin: 0;
+        font-size: 0.9em;
+        opacity: 0.9;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <h1>Push Notification Demo</h1>
+      <button id="requestPermission">Request Notification Permission</button>
+
+      <div id="notificationForm" style="margin-top: 20px">
+        <h2>Send Notification</h2>
+        <input
+          type="text"
+          id="notificationTitle"
+          placeholder="Notification Title"
+        />
+        <textarea
+          id="notificationBody"
+          placeholder="Notification Body"
+        ></textarea>
+        <button id="sendNotification">Send Notification</button>
+      </div>
+    </div>
+
+    <!-- Firebase App (the core Firebase SDK) -->
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+    <!-- Firebase Messaging -->
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-messaging-compat.js"></script>
+
+    <script>
+      // Add toast function
+      function showToast(message, type = 'success') {
+        // Remove existing toast if any
+        const existingToast = document.querySelector('.toast');
+        if (existingToast) {
+          existingToast.remove();
+        }
+
+        const toast = document.createElement('div');
+        toast.className = `toast ${type}`;
+        
+        // Add success icon for success toast
+        if (type === 'success') {
+          toast.innerHTML = `
+            <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+              <path d="M8.6 14.6L15.65 7.55L14.25 6.15L8.6 11.8L5.75 8.95L4.35 10.35L8.6 14.6ZM10 20C8.61667 20 7.31667 19.7373 6.1 19.212C4.88333 18.6867 3.825 17.9743 2.925 17.075C2.025 16.175 1.31267 15.1167 0.788 13.9C0.26333 12.6833 0.000666667 11.3833 0 10C0 8.61667 0.26267 7.31667 0.788 6.1C1.31333 4.88333 2.02567 3.825 2.925 2.925C3.825 2.025 4.88333 1.31267 6.1 0.788C7.31667 0.26333 8.61667 0.000666667 10 0C11.3833 0 12.6833 0.26267 13.9 0.788C15.1167 1.31333 16.175 2.02567 17.075 2.925C17.975 3.825 18.6877 4.88333 19.213 6.1C19.7383 7.31667 20.0007 8.61667 20 10C20 11.3833 19.7373 12.6833 19.212 13.9C18.6867 15.1167 17.9743 16.175 17.075 17.075C16.175 17.975 15.1167 18.6877 13.9 19.213C12.6833 19.7383 11.3833 20.0007 10 20Z" fill="currentColor"/>
+            </svg>
+            ${message}
+          `;
+        } else {
+          toast.textContent = message;
+        }
+        
+        document.body.appendChild(toast);
+
+        // Remove toast after 3 seconds
+        setTimeout(() => {
+          toast.style.animation = 'toastSlideDown 0.3s ease-in forwards';
+          setTimeout(() => toast.remove(), 300);
+        }, 3000);
+      }
+
+      // Load Firebase config from backend
+      async function loadFirebaseConfig() {
+        try {
+          const response = await fetch('/api/firebase-config');
+          if (!response.ok) {
+            throw new Error('Failed to load Firebase configuration');
+          }
+          return await response.json();
+        } catch (error) {
+          console.error('Error loading Firebase config:', error);
+          showToast('Failed to load configuration', 'error');
+          throw error;
+        }
+      }
+
+      // Initialize Firebase with config from backend
+      async function initializeFirebase() {
+        try {
+          const firebaseConfig = await loadFirebaseConfig();
+          firebase.initializeApp(firebaseConfig);
+          return firebase.messaging();
+        } catch (error) {
+          console.error('Firebase initialization failed:', error);
+          showToast('Failed to initialize notifications', 'error');
+          throw error;
+        }
+      }
+
+      let messaging = null;
+
+      // Initialize app
+      (async () => {
+        try {
+          messaging = await initializeFirebase();
+          
+          // Add foreground message handler
+          messaging.onMessage((payload) => {
+            console.log('Received foreground message:', payload);
+            
+            // Show notification manually in foreground
+            if (Notification.permission === "granted") {
+              // Show system notification
+              navigator.serviceWorker.ready.then(registration => {
+                registration.showNotification(payload.notification.title, {
+                  body: payload.notification.body,
+                  icon: payload.notification.icon || 'https://www.gstatic.com/notifications/icon_192.png',
+                  badge: payload.notification.icon || 'https://www.gstatic.com/notifications/icon_192.png',
+                  data: payload.fcmOptions,
+                  requireInteraction: true,
+                  actions: [
+                    {
+                      action: 'open',
+                      title: 'Open'
+                    }
+                  ]
+                }).catch(err => console.error('Error showing notification:', err));
+              }).catch(err => console.error('Error getting service worker registration:', err));
+
+              // Show custom in-app notification
+              const container = document.createElement('div');
+              container.className = 'custom-notification';
+              
+              container.innerHTML = `
+                <h4>${payload.notification.title}</h4>
+                <p>${payload.notification.body}</p>
+              `;
+              
+              document.body.appendChild(container);
+              
+              // Add slide-out animation before removing
+              setTimeout(() => {
+                container.style.animation = 'slideOut 0.5s ease-in forwards';
+                setTimeout(() => container.remove(), 500);
+              }, 4500);
+            }
+          });
+
+          let currentToken = "";
+
+          // Register service worker
+          if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.register('/firebase-messaging-sw.js', {
+              scope: '/'
+            }).then(async (registration) => {
+              console.log('Service Worker registered with scope:', registration.scope);
+              
+              // Immediately check if we can get permission
+              const permission = await Notification.requestPermission();
+              if (permission === "granted") {
+                try {
+                  const token = await messaging.getToken({
+                    vapidKey: 'BFBOtQ98DZdmEmkaHMZpBcOAaxUsd8qPyC0ae7etMNVYV3psev2irPa_OPCN5sCNo6BMqPr6zWrefWvKoGjCuRU',
+                    serviceWorkerRegistration: registration
+                  });
+                  currentToken = token;
+                  console.log("Initial token:", token);
+                  
+                  // Register token with backend
+                  await fetch("/api/register-token", {
+                    method: "POST",
+                    headers: {
+                      "Content-Type": "application/json",
+                    },
+                    body: JSON.stringify({ token }),
+                  });
+                } catch (err) {
+                  console.error('Error getting initial token:', err);
+                }
+              }
+            }).catch(function(error) {
+              console.error('Service Worker registration failed:', error);
+            });
+          }
+
+          // Request permission and get token
+          document
+            .getElementById("requestPermission")
+            .addEventListener("click", async () => {
+              try {
+                const registration = await navigator.serviceWorker.ready;
+                console.log('Service Worker is ready');
+
+                const permission = await Notification.requestPermission();
+                if (permission === "granted") {
+                  const token = await messaging.getToken({
+                    vapidKey: 'BFBOtQ98DZdmEmkaHMZpBcOAaxUsd8qPyC0ae7etMNVYV3psev2irPa_OPCN5sCNo6BMqPr6zWrefWvKoGjCuRU',
+                    serviceWorkerRegistration: registration
+                  });
+                  currentToken = token;
+                  console.log("Token:", token);
+
+                  await fetch("/api/register-token", {
+                    method: "POST",
+                    headers: {
+                      "Content-Type": "application/json",
+                    },
+                    body: JSON.stringify({ token }),
+                  });
+
+                  showToast("✨ Notification permission granted!");
+                }
+              } catch (error) {
+                console.error("Error:", error);
+                showToast(error.message, "error");
+              }
+            });
+
+          // Send notification
+          document
+            .getElementById("sendNotification")
+            .addEventListener("click", async () => {
+              const title = document.getElementById("notificationTitle").value;
+              const body = document.getElementById("notificationBody").value;
+
+              if (!currentToken) {
+                showToast("Please request notification permission first!", "error");
+                return;
+              }
+
+              try {
+                const response = await fetch("/api/send-notification", {
+                  method: "POST",
+                  headers: {
+                    "Content-Type": "application/json",
+                  },
+                  body: JSON.stringify({
+                    token: currentToken,
+                    title,
+                    body,
+                  }),
+                });
+
+                if (!response.ok) {
+                  throw new Error('Server responded with ' + response.status);
+                }
+
+                const data = await response.json();
+                showToast("✨ Notification sent successfully!");
+                
+                // Clear the form
+                document.getElementById("notificationTitle").value = "";
+                document.getElementById("notificationBody").value = "";
+              } catch (error) {
+                console.error("Error:", error);
+                showToast(error.message, "error");
+              }
+            });
+        } catch (error) {
+          console.error('Error initializing app:', error);
+          showToast('Failed to initialize app', 'error');
+        }
+      })();
+    </script>
+  </body>
+</html>
