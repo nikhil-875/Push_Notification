@@ -278,8 +278,8 @@
               navigator.serviceWorker.ready.then(registration => {
                 registration.showNotification(payload.notification.title, {
                   body: payload.notification.body,
-                  icon: payload.notification.icon || 'https://www.gstatic.com/notifications/icon_192.png',
-                  badge: payload.notification.icon || 'https://www.gstatic.com/notifications/icon_192.png',
+                  icon: payload.notification.icon,
+                  // badge: payload.notification.icon ,
                   data: payload.fcmOptions,
                   requireInteraction: true,
                   actions: [

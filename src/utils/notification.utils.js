@@ -9,7 +9,7 @@ export const createNotificationMessage = (token, title, body) => ({
     },
     notification: {
       requireInteraction: true,
-      icon: 'https://www.gstatic.com/notifications/icon_192.png'
+      icon: 'https://tracker.singaji.in/SSS_logo-animation.png'
     },
     fcm_options: {
       link: '/'
